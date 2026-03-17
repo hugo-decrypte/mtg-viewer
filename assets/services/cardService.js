@@ -13,3 +13,8 @@ export async function fetchCard(uuid) {
     card.text = card.text.replaceAll('\\n', '\n');
     return card;
 }
+
+export async function searchCards(query) {
+    const response = await fetch(`/api/card/search?q=${encodeURIComponent(query)}`);
+    return response.json();
+}

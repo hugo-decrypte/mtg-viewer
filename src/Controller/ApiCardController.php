@@ -7,6 +7,7 @@ use App\Entity\Card;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Routing\Annotation\Route;
@@ -26,6 +27,22 @@ class ApiCardController extends AbstractController
     public function cardAll(): Response
     {
         $cards = $this->entityManager->getRepository(Card::class)->findAll();
+        return $this->json($cards);
+    }
+
+    #[Route('/search', name: 'search', methods: ['GET'])]
+    #[OA\Get(description: 'Search cards by name (minimum 3 characters)')]
+    #[OA\Response(response: 200, description: 'List of matching cards (max 20 results)')]
+    #[OA\Response(response: 400, description: 'Query too short')]
+    public function searchCard(Request $request): Response
+    {
+        $query = $request->query->get('q', '');
+
+        if (strlen(trim($query)) < 3) {
+            return $this->json(['error' => 'la requête doit contenir au moins 3 caracters'], 400);
+        }
+
+        $cards = $this->entityManager->getRepository(Card::class)->getByName($query, 20);
         return $this->json($cards);
     }
 
